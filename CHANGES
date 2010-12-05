@@ -1,0 +1,39 @@
+CHANGES file
+
+Sep 16 2002		CNAME implemented
+Sep 14 2002		Fixed a wildcard RR response building bug.
+Sep 14 2002             Fixed a memory leak introduced with the new forwarding
+                        ACL control.
+Sep 12 2002             Forwarding fixed, now after the forward_next timeout
+                        the query is sent to the next nameserver and so on.
+                        Thanks to "Robert Allmeroth" <Robert.Allmeroth@epygi.de>
+Sep 09 2002		Now stuff that should never be < 0 are unsigned.
+Sep 09 2002		Major change, merged with the new hashtable library
+			version.
+Sep 08 2002		Implemented wildcard Resource Records, see Docs.
+Sep 06 2002		Fixed a problem in name_decode(). If the name format
+			was bad, but the pointer-to-pointer where to
+			store the name was set to NULL (used to only know
+			the length of the encoded name by get_min_ttl())
+			the function deferenced a NULL pointer, writing
+			0 on it. Not exploitable to break in but a bad DoS.
+Sep 05 2002		now chdir() before to chroot().
+Sep 04 2002		call abort() in the SIG_SEGV sighandler to dump the core
+Sep 04 2002		use setrlimit(2) to enable core dumping
+Sep 04 2002		Modified Copyright notices and email
+Sep 04 2002		Fix for case insensitive hashtable key creation
+Sep 03 2002		keyword 'forwarder' changed in 'nameserver'
+Sep 03 2002		RRs qtype to symbol table updated
+Sep 03 2002		Now names are matched case insensitive
+Aug 30 2002		Fixed SIGCHLD handling problem.
+Aug 30 2002		Fixed autoptr, now generates a PTR record for all the
+			names for the IP address, not only for the first.
+Aug 30 2002		New 'fwd' ACL chain used for forwarding access control
+Feb  8 2001		Different algorithm for cache expiration check
+Feb  7 2001		Now uses strlcpy and strlcat
+Feb  6 2001		Zone tranfer code updated
+Feb  5 2001		Fork from ENS:
+			o Now uses hash table instead of lists
+			o #ifdef away
+			o config.c update
+???  ? ????		o too much stuff, I don't remember

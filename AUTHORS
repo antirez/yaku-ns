@@ -1,0 +1,16 @@
+Yaku-ns is developed with little efforts (that is almost only when
+something is broken for my own usage) by:
+
+	Salvatore Sanfilippo <antirez@invece.org>
+
+Thanks for bug reporting, code and/or other kind of support to:
+
+	* Robert Allmeroth <Robert.Allmeroth@epygi.de>
+		For reporting of a bug in the forwarding code
+
+	* Aethra (http://www.aethra.com) for bugfixing in early
+	  stage of development.
+
+--------------------------------------------------------------------------------
+Note: that this file is not complete since I lost the old credits file.
+      Please demand credits if you contributed but I miss you here.

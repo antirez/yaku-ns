@@ -1,0 +1,33 @@
+[filename]
+     Description.
+
+[rfc1034.txt]
+     Domain names - concepts and facilities. P.V. Mockapetris.
+     Nov-01-1987. (Format: TXT=129180 bytes) (Obsoletes RFC0973, RFC0882,
+     RFC0883) (Obsoleted by RFC1065, RFC2308) (Updated by RFC1101,
+     RFC1183, RFC1348, RFC1876, RFC1982, RFC2065, RFC2181, RFC2308,
+     RFC2535) (Also STD0013) (Status: STANDARD)
+
+[rfc1035.txt]
+     Domain names - implementation and specification. P.V.
+     Mockapetris. Nov-01-1987. (Format: TXT=125626 bytes) (Obsoletes
+     RFC0973, RFC0882, RFC0883) (Updated by RFC1101, RFC1183, RFC1348,
+     RFC1876, RFC1982, RFC1995, RFC1996, RFC2065, RFC2181, RFC2136,
+     RFC2137, RFC2308, RFC2535) (Also STD0013) (Status: STANDARD)
+
+[rfc1794.txt]
+     DNS Support for Load Balancing. T. Brisco. April 1995. (Format:
+     TXT=15494 bytes) (Status: INFORMATIONAL)
+
+[rfc2181.txt]
+     Clarifications to the DNS Specification. R. Elz, R. Bush. July
+     1997. (Format: TXT=36989 bytes) (Updates RFC1034, RFC1035, RFC1123)
+     (Updated by RFC2535) (Status: PROPOSED STANDARD)
+
+[rfc2308.txt]
+     Negative Caching of DNS Queries (DNS NCACHE). M. Andrews. March
+     1998. (Format: TXT=41428 bytes) (Obsoletes RFC1034) (Updates RFC1034,
+     RFC1035) (Status: PROPOSED STANDARD)
+
+[draft-ietf-dnsext-axfr-clarify-01.txt]
+     DNS Zone Transfer Protocol Clarifications

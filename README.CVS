@@ -1,0 +1,19 @@
+----------------------------------------------------------------
+How to get the yaku-ns source code from the anonymous CVS server
+----------------------------------------------------------------
+
+  $ cvs -d:pserver:anonymous@cvs.hping2.sourceforge.net:/cvsroot/hping2 login   
+
+  CVS will ask for the password, just press enter, no password is required
+
+  than type the following to download the full source code.
+
+  $ cvs -z8 -d:pserver:anonymous@cvs.hping2.sourceforge.net:/cvsroot/hping2 checkout yaku-ns
+
+-----------------------------------
+How to update your source code tree
+-----------------------------------
+
+  change the current directory to /somewhere/yaku-ns, than just type:
+
+  cvs update

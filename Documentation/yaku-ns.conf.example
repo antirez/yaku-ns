@@ -1,0 +1,269 @@
+#############################################
+# Example self-commented configuration file #
+#############################################
+
+# NOTE: All the keywords are case insensitive
+
+# This is a comment
+
+# include <filename>
+#
+# Will include the given file.
+
+###############
+### LOGGING ###
+###############
+
+# logfile <filename absolute path>
+#
+# Specify the filename for the logs
+#
+# When not demonized the default is to log to the standard output
+
+# nologtime
+#
+# Disable timestamp in log lines
+#
+# nologtime is disabled by default (i.e. the timestamp is enabled)
+
+# loglevel <level>
+#
+# Set the verbosity level to one of the following:
+#
+# errors	very low verbosity, logs only errors.
+# low		logs more, including received queries/response.
+# med		logs more, including info about ACL and cached responses.
+# high		very verbose, logs loaded RRs, expirations, ...
+# debug		logs information usually not useful. Only if DEBUG was defined.
+#
+# Example:
+#
+# loglevel med
+#
+# Default log level is: errors
+
+###########################
+### ACCESS CONTROL LISTS ##
+###########################
+
+# acl <chain name> <rule1> <rule2> ... <ruleN>
+#
+# Built-in Access Control Lists to deny per-IP-address
+#
+# Avaliable chains:
+#
+# dns.allow	allow rules for the DNS service
+# dns.deny	deny rules  for the DNS service
+# fwd.allow	allow rules for the DNS forwarding
+# fwd.deny	deny rules for the DNS forwarding
+# axfr.allow	allow rules for the zone transfer
+# axfr.deny	deny rules  for the zone transfer
+#
+# Rules:
+#
+# A rule is a truncated IP address or an IP address
+# with a trailer '$' character.
+# Example of rules and what it matches:
+#
+# 192.168.1.	- will match 192.168.1.1, 192.168.1.2, 192.168.*
+# 192.168.1.2	- will match 192.168.1.2, 192.168.1.22, 192.168.1.2*
+# 192.168.1.3$	- will match only 192.168.1.3
+# $		- will match ALL the ip addresses
+#
+# For example to deny all the IP addresses except
+# the 192.168.1.0/24 net for the DNS service you
+# should use:
+#
+# acl dns.allow 192.168.1.
+# acl dns.deny $
+#
+# NOTE: this stuff works exactly like /etc/hosts.allow and /etc/hosts.deny
+
+######################
+### UPTIME CONTROL ###
+######################
+
+# uptime
+#
+# Enable a built-in dynamic "uptime.yaku" CHAOS/TXT Resource Record that
+# contains the current uptime in a human readable format.
+
+######################################
+### LOCAL RESOURCE RECORDS OPTIONS ###
+######################################
+
+# wildcard_lookup
+#
+# Enable the wildcard lookup, so you can define resource records
+# containing the '*' character, like
+#
+# A *.yakuns.org 1.2.3.4
+#
+# The wildcard lookup algorithm works like this:
+#
+# You search for a.b.c.d, if the server can't find it than search for
+# *.b.c.d, if also there is no match search for *.c.d and so
+# on. The max number of iteration and the max reduction of the original
+# name are controlled using the following two options:
+# wildcard_lookup_deepth and wildcard_lookup_minlevel
+
+##################
+### FORWARDING ###
+##################
+
+# nameserver <IP address>
+#
+# Specify an external server to act like bind "forward only".
+# Multiple forwaders are allowed.
+#
+# If no nameservers are specified the forwarding is turned off,
+# a query that does not match the local Resoure Records will produce
+# a NXDOMAIN error.
+#
+# Leave the forwarding off if you are using Yaku-NS just as primary NS
+# server for a domain!
+
+# forward_max <max entries>
+#
+# The maximum numbers of pending forwarded queries.
+#
+# Default is 1000 entries
+
+# forward_entry_timeout <seconds>
+#
+# Maximum time to live of every entry in the forwarded requests table.
+# After this time the entry will be removed, if the forwarder
+# send the response after the expire was reached the response will
+# be ignored.
+#
+# Default is 50 seconds
+
+# forward_next_timeout <seconds>
+#
+# Time to wait before to contact the next forwarder.
+# Anyway if a reply comes from an early forwarder it will
+# be accepted and the entry in the forwad table removed.
+#
+# Default is 3 seconds
+
+############################
+### CACHING (FORWARDING) ###
+############################
+
+# cache_max <max entries>
+#
+# Maximum number of cached DNS responses in the cache.
+#
+# Default is 5000 entries
+
+# cache_minttl
+#
+# Minimun time to live for a cached response
+#
+# Default is 0 seconds
+
+# cache_maxttl
+#
+# Maximum time to live for a cached response
+#
+# Default is 1 day
+
+# cache_noexpire
+#
+# If set the cached responses will *never* expire
+# Don't set it unless you know what you are doing.
+
+#######################
+### ZONE TRASFERING ###
+#######################
+
+# axfr_more_rr
+#
+# For default yaku-ns replies to AXFR requests in
+# "compatibility-mode": during the zone transfer
+# every message contains just one resource record.
+# If the axfr_more_rr option is set yaku-ns will
+# behaves as specifed in the
+# "DNS Zone Transfer Protocol Clarifications" Internet
+# draft, filling every message with more resource records.
+#
+# Don't enable this option if unsure
+
+# tcp_requests_for_connection <value>
+#
+# Yaku-ns uses DNS over TCP only to allow
+# AXFR requests. This option defines the number of
+# consecutive requests that must be accepted in the same
+# TCP connection. The default is 2 to allow a tipical
+# SOA + AXFR request for zone transfering.
+#
+# Set it to 0 to allow infinite requests in the same
+# TCP connection (until the 2 minutes timeout expires)
+#
+# Leave it undefined if yaku-ns works in your configuration.
+# Try to set it to zero if you experimented problems with secondary DNS severs.
+#
+# Default is, as stated, 2.
+
+#########################################
+### LOCAL RESOURCE RECORDS DEFINITION ###
+#########################################
+
+# ttl <seconds>
+#
+# Set the time to live for the next RRs defined
+
+# class <IN|CHAOS|ANY>
+#
+# Set the class for the next RRs defined
+
+# A <ame> <IP address>
+#
+# To specify an A Resource Record, example:
+#
+# A yakuns.example.net 192.168.1.1
+
+# MX <name> <priority> <mail exchange>
+#
+# Create an MX RR, example:
+#
+# MX example.net 10 mail.example.net
+
+# PTR <name> <pointer>
+#
+# Create a PTR RR, example:
+#
+# PTR 1.1.168.192.in-addr.arpa dns.example.net
+
+# TXT <name> <text> <text> <text> <...>
+#
+# Create a TXT RR,
+# all the characters before a dot will be in the same label.
+# Example:
+#
+# TXT ens ENS is a name server
+
+# NS <name> <name server name>
+#
+# Create an NS RR, example:
+#
+# NS example.net ens.example.net
+
+# SOA <name> <origin> <mailbox> <serial> <refresh> <retry> <expire> <minimum>
+#
+# Create a SOA RR, example:
+#
+# SOA example.net ens.example.net antirez.invece.org 1234 60 60 60 0
+
+# autoptr
+#
+# Enable the "Auto-PTR" mode. For every A RR added the logical
+# PTR will be automatically created.
+#
+# Disable by default
+
+# noautoptr
+#
+# Disable the "Auto-PTR" mode.
+
+# EOF

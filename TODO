@@ -1,0 +1,68 @@
+Urgent stuff
+
+* merge with the new version of aht
+* randomize the aht hash function -- upgrade aht itself, it is generally
+  useful.
+* Modify the brain-dead algorithm that removes the last accessed entry
+  with a simpler algorithm that just drops a random entry.
+* CNAME RR
+
+- Check better the return code of ht_add_generic and others ht_* functions
+  expecially add assert()ions when you feel this functions can return only
+  a range of value.
+- AXFR ACLs per-zone
+- Clear the AA bit from forwarded responses and cached ones
+- The control interface, unix domain sockets
+- name encode/decode: versions without dyn allocation
+- Check the effect of entry removing: removing some duplicated
+  entry (for example with id 0) will be impossible to lookup
+  for an entry with the same name/type/class with an id of 1,2,...
+- Out of memory issue
+- CNAME
+- HINFO
+- name compression for outgoing packets
+- SOA minimum issue
+- Query with the recursion required not set
+- Many things to fix about the protocol, truncation, TTLs, ..., see the RFC2181
+	* the responses should be generated using the same IP address
+	  in the dest address field of the query sent by the client.
+	* RRs with the same label (name/qclass/qtype) and the same
+	  data SHOULD be suppressed, only one considered.
+	* In an RRSet all the TTLs MUST be the same.
+	* RRSet with different TTL should not be accepted in a response:
+	  if they comes from an authoritative source the software
+	  should use for the whole set the minimum TTL. If the source
+	  ins't authoritative the response should be discarded and
+	  the authoritative servers contacted.
+	* Servers MUST never merge RRs from a response with RRs in
+	  the cache to form a response.
+	* TTLs received greater than 2^31-1 should be considered
+	  as zero.
+
+	  	--- continue with the section 10 of the RFC ---
+
+DONE:  * Truncation: the TC bit should be set only when the RRSet needed
+         for the reply don't fit the protocol limit. It should not be
+         set when _extra_ informations can't be included. When the additional
+         information can't be inserted the entire RR that can't fit
+         the left space shound NOT be excluded from the response. Otherwise
+         when TC bit is set the not complete RR of the RRSet can be
+         left in the response. When a client receive a respose with the
+         TC bit set should retry to query the server under the TCP
+
+DONE: DNS over TCP should also be able to reply to SOA RR requests.
+      Usually the refresh starts asking for the SOA RR, than asking for
+      the AXFR.
+
+--------------------------------------------------------------------------
+Less urgent stuff
+
+- Clean-up the config refresh code.
+- Change query and query_section to question_* when appropriate
+- Move protocol related stuff to udp.c and tcp.c
+- After the fork the TCP handler should close all the unneedded filedes
+- The forwarding code should check for forward entry in timeout
+  _after_ the incoming packet processing? Otherwise the response that
+  may cause the forward entry clean-up is considered only after that
+  the DNS server tryed to ask the same query to the next forwarder.
+- Use alloca() instead of malloc() when possible.
