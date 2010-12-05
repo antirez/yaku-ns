@@ -499,7 +499,7 @@ void remove_trailer_dot(char *name)
 	}
 }
 
-int log(int level, char *fmt, ...)
+int ylog(int level, char *fmt, ...)
 {
 	ARG_UNUSED(level);
 	ARG_UNUSED(fmt);

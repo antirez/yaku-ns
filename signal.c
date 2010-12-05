@@ -33,12 +33,12 @@ void signal_handler(int signum)
 		signal_usr2++;
 		break;
 	case SIGSEGV:
-		log(VERB_FORCE, "SIGSEGV trapped -- INTERNAL ERROR\n");
+		ylog(VERB_FORCE, "SIGSEGV trapped -- INTERNAL ERROR\n");
 		dump_state();
 		abort();
 		break;
 	default:
-		log(VERB_FORCE, "Signal %d trapped: exit\n", signum);
+		ylog(VERB_FORCE, "Signal %d trapped: exit\n", signum);
 		exit(1);
 	}
 	install_signal_handler();
@@ -51,7 +51,7 @@ int handle_signals(void)
 
 	if (signal_up) {
 		signal_up--;
-		log(VERB_LOW, "SIGHUP trapped: read the config file\n");
+		ylog(VERB_LOW, "SIGHUP trapped: read the config file\n");
 		config_reset();
 		config_read(configfile);
 		count++;
@@ -66,7 +66,7 @@ int handle_signals(void)
 	if (signal_usr2) {
 		signal_usr2--;
 		opt_forward = !opt_forward;
-		log(VERB_LOW, "SIGUSR2 trapped, forwarding is %s\n",
+		ylog(VERB_LOW, "SIGUSR2 trapped, forwarding is %s\n",
 			opt_forward ? "ON" : "OFF");
 		fflush(logfp);
 		count++;

@@ -533,15 +533,16 @@ int send_udp(int fd, void *packet, unsigned int size, struct sockaddr *to, int t
 /* Send a TCP DNS response */
 int send_tcp(byte *packet, int len, int sd)
 {
-	u_int16_t size = htons(len);
+	u_int16_t size;
 	int retval;
 	HEADER *hdr = (HEADER*) packet;
 
 	/* TCP truncation */
-	if (size > TCPPACKETSZ) {
+	if (len > TCPPACKETSZ) {
 		len = TCPPACKETSZ;
 		hdr->tc = 1; /* truncation flag ON */
 	}
+        size = htons(len);
 
 	if (send(sd, &size, 2, 0) == -1) {
 		perror("[send_tcp] send");
@@ -569,7 +570,7 @@ static byte *get_qsection(byte *packet, unsigned int size, int *qsize)
 		goto out;
 	}
 	if (size < sizeof(HEADER)+retval+4) goto out;
-	encoded = name_encode(name, &encoded_size, '.');
+	encoded = (char*)name_encode(name, &encoded_size, '.');
 	if (encoded == NULL) {
 		*qsize = encoded_size;
 		goto out;
@@ -585,7 +586,7 @@ static byte *get_qsection(byte *packet, unsigned int size, int *qsize)
 	free(encoded);
 	/* the caller must free qsection */
 	*qsize = encoded_size+4;
-	return qsection;
+	return (byte*) qsection;
 out:
 	free(name);
 	free(qsection);
@@ -815,7 +816,7 @@ byte *name_encode(char *msg, int *size, char sep)
 
 	while(1) {
 		p = strchr(p, sep);
-		label_len = (p != NULL) ? (p - last) : strlen(last);
+		label_len = (p != NULL) ? (p - last) : (signed)strlen(last);
 		if (label_len == 0) { /* end of the name */
 			break;
 		} else if (label_len > MAXLABEL) { /* out of range label len */

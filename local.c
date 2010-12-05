@@ -154,14 +154,14 @@ int local_add_entry(struct RRentry *rr)
 	return j;
 
 oom:
-	log(VERB_FORCE, "ht_add() failed adding a local"
+	ylog(VERB_FORCE, "ht_add() failed adding a local"
 			"Resource Record with exit code %d\n", ret);
 	exit(1);
 }
 
-void local_log(struct RRentry *rr)
+void local_ylog(struct RRentry *rr)
 {
-	log(VERB_HIG, "loaded: %s %s %s\n",
+	ylog(VERB_HIG, "loaded: %s %s %s\n",
 		qtype_to_str(rr->qtype),
 		qclass_to_str(rr->qclass),
 		rr->name);
@@ -182,7 +182,7 @@ int local_add_A(char *name, char *addr)
 		return -1;
 	}
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -204,7 +204,7 @@ int local_add_MX(char *name, char *priority, char *exchange)
 	memcpy(rr->data+2, enc_exchange, enc_exchange_size);
 	free(enc_exchange);
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -222,7 +222,7 @@ int local_add_PTR(char *name, char *ptr)
 	memcpy(rr->data, enc_ptr, enc_ptr_size);
 	free(enc_ptr);
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -240,7 +240,7 @@ int local_add_CNAME(char *name, char *canonical)
 	memcpy(rr->data, enc_cname, enc_cname_size);
 	free(enc_cname);
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -258,7 +258,7 @@ int local_add_NS(char *name, char *ns)
 	memcpy(rr->data, enc_ns, enc_ns_size);
 	free(enc_ns);
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -285,7 +285,7 @@ int local_add_TXT(char *argv[])
 	memcpy(rr->data, enc_txt, enc_txt_size);
 	free(enc_txt);
 	local_add_entry(rr);
-	local_log(rr);
+	local_ylog(rr);
 	return 0;
 }
 
@@ -320,7 +320,7 @@ int local_add_SOA(int argc, char **argv)
 	free(enc_dns);
 	free(enc_mailbox);
 	local_add_entry(rr);
-	log(VERB_HIG,	"loaded: SOA for %s\n"
+	ylog(VERB_HIG,	"loaded: SOA for %s\n"
 			"\tdns    : %s\n"
 			"\tmailbox: %s\n"
 			"\tserial : %lu\n"

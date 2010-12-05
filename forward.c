@@ -197,7 +197,7 @@ void forward_free_expired(void)
 		}
 		f = ht_value(&forward_table, index);
 		if (now - f->timestamp > forward_timeout) {
-			log(VERB_HIG, "Expired forwarded request %s %s %s, "
+			ylog(VERB_HIG, "Expired forwarded request %s %s %s, "
 					"ID:%d\n",
 					qtype_to_str(f->qtype),
 					qclass_to_str(f->qclass),
@@ -215,7 +215,7 @@ void forward_free_expired(void)
 			forward_addr.sin_port = htons(dns_forward_port);
 			forward_addr.sin_addr.s_addr =
 				forward_server[f->server_number].s_addr;
-			DEBUG(log(VERB_FORCE, "ASK TO SERVER %d [%s %s %s]\n",
+			DEBUG(ylog(VERB_FORCE, "ASK TO SERVER %d [%s %s %s]\n",
 						f->server_number,
 						qtype_to_str(f->qtype),
 						qclass_to_str(f->qclass),

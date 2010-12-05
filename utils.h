@@ -29,7 +29,7 @@
  * warning for unused function parameters when you use -W.
  * This macro is better than -Wno-unused. We want all the
  * other unused warnings */
-#define ARG_UNUSED(a) while(0) { if (&a) break; }
+#define ARG_UNUSED(a) ((void) a);
 
 #ifndef MIN
 #define MIN(x,y)        ((x)<(y)?(x):(y))
@@ -47,7 +47,7 @@
 #define yakuns_assert(x) \
 do { \
 	if ((x) == 0) { \
-		log(VERB_FORCE, \
+		ylog(VERB_FORCE, \
 			"assert failed: %s is false in %s at line %d\n", \
 			#x, __FILE__, __LINE__); \
 		abort(); \

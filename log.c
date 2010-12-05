@@ -21,12 +21,12 @@ int opt_logtime = 1;
 int opt_verbose = 0;
 
 /* exported functions */
-int log(int level, char *fmt, ...);
+int ylog(int level, char *fmt, ...);
 int log_flush(void);
 void open_logfile(char *filename);
 
 /* Just log the printf-like message */
-int log(int level, char *fmt, ...)
+int ylog(int level, char *fmt, ...)
 {
 	time_t t;
 	struct tm *tmtime;

@@ -187,7 +187,7 @@ int cache_free_expired(void)
 		}
 		current = ht_value(&cache_table, index);
 		if (current->creat_timestamp + current->ttl <= (unsigned)now) {
-			log(VERB_HIG, "Expired cache entry %s %s %s\n",
+			ylog(VERB_HIG, "Expired cache entry %s %s %s\n",
 				qtype_to_str(current->qtype),
 				qclass_to_str(current->qclass),
 				current->name);
@@ -217,7 +217,7 @@ struct cacheentry *cache_search_entry(char *name, int qclass, int qtype)
 		/* Expired? Free the entry and return NULL */
 		if (opt_cachenoexpire == 0 &&
 		    cache->creat_timestamp + cache->ttl <= (unsigned)now) {
-			log(VERB_HIG, "Expired cache entry %s %s %s\n",
+			ylog(VERB_HIG, "Expired cache entry %s %s %s\n",
 				qtype_to_str(cache->qtype),
 				qclass_to_str(cache->qclass),
 				cache->name);

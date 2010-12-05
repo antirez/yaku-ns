@@ -145,10 +145,10 @@ int config_read(char *filename)
 	} else {
 		fp = fopen(filename, "r");
 		if (fp == NULL) {
-			log(VERB_FORCE, "Can't open the config file %s\n",
+			ylog(VERB_FORCE, "Can't open the config file %s\n",
 				filename);
 			perror("fopen");
-			log(VERB_FORCE, "Remember that you MUST "
+			ylog(VERB_FORCE, "Remember that you MUST "
 					"specify the absolute path\n");
 			exit(1);
 		}
@@ -170,8 +170,8 @@ int config_read(char *filename)
 
 static void config_error(int linenum, char *line, char *errormsg)
 {
-	log(VERB_FORCE, "--\n`%s' at line %d\n", errormsg, linenum);
-	log(VERB_FORCE, "%d: %s--\n", linenum, line);
+	ylog(VERB_FORCE, "--\n`%s' at line %d\n", errormsg, linenum);
+	ylog(VERB_FORCE, "%d: %s--\n", linenum, line);
 	exit(1);
 }
 
@@ -190,9 +190,9 @@ static int op_include(int argc, char **argv)
 
 	if (securelevel >= 1)
 		return CERROR_PERM;
-	log(VERB_HIG, "> include %s\n", argv[1]);
+	ylog(VERB_HIG, "> include %s\n", argv[1]);
 	config_read(argv[1]);
-	log(VERB_HIG, "< end of inclusion of %s\n", argv[1]);
+	ylog(VERB_HIG, "< end of inclusion of %s\n", argv[1]);
 	return CERROR_SUCCESS;
 }
 
@@ -206,7 +206,7 @@ static int op_forwarder(int argc, char **argv)
 	    &forward_server[forward_server_count]) == 0)
 		return CERROR_BADIP;
 	opt_forward = 1;
-	log(VERB_HIG, "(forwarding) external server: %s\n", argv[1]);
+	ylog(VERB_HIG, "(forwarding) external server: %s\n", argv[1]);
 	forward_server_count++;
 	/* accept responses from this external server */
 	acl_add_rule(argv[1], &acl_dns_allow_head, &acl_dns_allow_tail);
@@ -221,9 +221,9 @@ static int op_forward_max(int argc, char **argv)
 	if (forward_max <= 0) {
 		forward_max = 0;
 		opt_forward = 0;
-		log(VERB_MED, "forwarding disabled\n");
+		ylog(VERB_MED, "forwarding disabled\n");
 	} else {
-		log(VERB_HIG, "forwarding: max queue %d\n", forward_max);
+		ylog(VERB_HIG, "forwarding: max queue %d\n", forward_max);
 	}
 	return CERROR_SUCCESS;
 }
@@ -236,7 +236,7 @@ static int op_forward_entry_timeout(int argc, char **argv)
 	if (forward_timeout <= 0) {
 		return CERROR_INVALID;
 	} else {
-		log(VERB_HIG, "forwarding: entry timeout %d\n", forward_timeout);
+		ylog(VERB_HIG, "forwarding: entry timeout %d\n", forward_timeout);
 	}
 	return CERROR_SUCCESS;
 }
@@ -249,7 +249,7 @@ static int op_forward_next_timeout(int argc, char **argv)
 	if (next_server_timeout < 0) {
 		return CERROR_INVALID;
 	} else {
-		log(VERB_HIG, "forwarding: next server timeout %d\n",
+		ylog(VERB_HIG, "forwarding: next server timeout %d\n",
 			next_server_timeout);
 	}
 	return CERROR_SUCCESS;
@@ -263,9 +263,9 @@ static int op_cache_max(int argc, char **argv)
 	if (cache_max <= 0) {
 		cache_max = 0;
 		opt_cache = 0;
-		log(VERB_MED, "cache: disabled\n");
+		ylog(VERB_MED, "cache: disabled\n");
 	} else {
-		log(VERB_HIG, "cache: max size %d\n", cache_max);
+		ylog(VERB_HIG, "cache: max size %d\n", cache_max);
 	}
 	return CERROR_SUCCESS;
 }
@@ -275,7 +275,7 @@ static int op_cache_minttl(int argc, char **argv)
 	ARG_UNUSED(argc)
 
 	cache_minttl = atoi(argv[1]);
-	log(VERB_HIG, "cache: min TTL %d\n", cache_minttl);
+	ylog(VERB_HIG, "cache: min TTL %d\n", cache_minttl);
 	return CERROR_SUCCESS;
 }
 
@@ -284,7 +284,7 @@ static int op_cache_maxttl(int argc, char **argv)
 	ARG_UNUSED(argc)
 
 	cache_maxttl = atoi(argv[1]);
-	log(VERB_HIG, "cache: max TTL %d\n", cache_maxttl);
+	ylog(VERB_HIG, "cache: max TTL %d\n", cache_maxttl);
 	return CERROR_SUCCESS;
 }
 
@@ -326,7 +326,7 @@ static int op_ttl(int argc, char **argv)
 	ARG_UNUSED(argc)
 
 	local_ttl = atoi(argv[1]);
-	log(VERB_HIG, "> Time To Live is %u\n", local_ttl);
+	ylog(VERB_HIG, "> Time To Live is %u\n", local_ttl);
 	return CERROR_SUCCESS;
 }
 
@@ -335,7 +335,7 @@ static int op_tcp_requests_for_connection(int argc, char **argv)
 	ARG_UNUSED(argc)
 
 	opt_tcp_requests_for_connection = atoi(argv[1]);
-	log(VERB_HIG, "TCP requests for connection set to %d\n",
+	ylog(VERB_HIG, "TCP requests for connection set to %d\n",
 			opt_tcp_requests_for_connection);
 	return CERROR_SUCCESS;
 }
@@ -346,13 +346,13 @@ static int op_class(int argc, char **argv)
 
 	if (!strcasecmp(argv[1], "IN")) {
 		local_class = C_IN;
-		log(VERB_HIG, "> Class is IN\n");
+		ylog(VERB_HIG, "> Class is IN\n");
 	} else if (!strcasecmp(argv[1], "CHAOS")) {
 		local_class = C_CHAOS;
-		log(VERB_HIG, "> Class is CHAOS\n");
+		ylog(VERB_HIG, "> Class is CHAOS\n");
 	} else if (!strcasecmp(argv[1], "ANY")) {
 		local_class = C_ANY;
-		log(VERB_HIG, "> Class is ANY\n");
+		ylog(VERB_HIG, "> Class is ANY\n");
 	} else {
 		return CERROR_INVALID;
 	}
@@ -396,7 +396,7 @@ static int op_acl(int argc, char **argv)
 			return CERROR_BADACL;
 		}
 		acl_add_rule(argv[j], head, tail);
-		log(VERB_HIG, "acl: loaded %s %s\n", argv[1], argv[j]);
+		ylog(VERB_HIG, "acl: loaded %s %s\n", argv[1], argv[j]);
 	}
 	return CERROR_SUCCESS;
 }

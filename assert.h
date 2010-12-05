@@ -21,7 +21,7 @@
 #define assert(x) \
 do { \
 	if ((x) == 0) { \
-		log(VERB_FORCE, \
+		ylog(VERB_FORCE, \
 			"assert failed: %s is false in %s at line %d\n", \
 			#x, __FILE__, __LINE__); \
 		abort(); \

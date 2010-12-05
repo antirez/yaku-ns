@@ -247,8 +247,8 @@
 #define CONV_BADCKSUM	(-3)
 #define CONV_BADBUFLEN	(-4)
 
-/* glibc always has byte order info in <endian.h> */
-#include <endian.h>
+/* Include endianess info in mostly portable way */
+#include "yakuendian.h"
 
 __BEGIN_DECLS
 

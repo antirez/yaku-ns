@@ -61,7 +61,7 @@
 
 /* ---------------------------- macros -------------------------------------- */
 /* ENS's perror */
-#define perror(x) log(VERB_FORCE, "%s: %s\n", x, strerror(errno))
+#define perror(x) ylog(VERB_FORCE, "%s: %s\n", x, strerror(errno))
 
 /* A simple way to trace memory leaks -- sorry if it seems obfustated code :) */
 #ifdef TRACE_LEAKS
@@ -389,7 +389,7 @@ void tcp_handler(void);
 /*********
  * log.c *
  *********/
-int log(int level, char *fmt, ...);
+int ylog(int level, char *fmt, ...);
 int log_flush(void);
 void open_logfile(char *filename);
 

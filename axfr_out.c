@@ -75,7 +75,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <wait.h>
 
 #define AXFR_CLIENT_MAX		50
 #define AXFR_CLIENT_TIMEOUT	120	/* At least 2 min, see RFC1034 */
@@ -132,7 +131,7 @@ int axfr_init(void)
 	} else {
 		struct in_addr tmp;
 		if (inet_aton(bindaddr, &tmp) == 0) {
-			log(VERB_FORCE, "[axfr_init] bad IP address "
+			ylog(VERB_FORCE, "[axfr_init] bad IP address "
 					"for binding\n");
 			exit(1);
 		}
@@ -184,10 +183,11 @@ void tcp_handler(void)
 {
 	HEADER *hdr;
 	byte tmp[2];
-	byte request[512];	/* even under TCP we limit to 512 bytes */
+	char request[512];	/* even under TCP we limit to 512 bytes */
 	byte *data;		/* points after the DNS header */
 	int data_size;		/* data size left */
-	int new, addrlen;	/* the new socket fd and the accept addrlen */
+	socklen_t addrlen;
+        int new;                /* new socket fd */
 	int query_count;	/* question sections in the query */
 	unsigned int size;	/* query size */
 	int retval, n_read;
@@ -213,14 +213,14 @@ void tcp_handler(void)
 
 	/* Check the ACL */
 	if (acl_check_axfr(straddr) == ACL_DENY) {
-		log(VERB_MED, "AXFR: access denied to client %s-%d\n",
+		ylog(VERB_MED, "AXFR: access denied to client %s-%d\n",
 			straddr, ntohs(newsa.sin_port));
 		goto out;
 	}
 
 	/* Max number of clients reached? */
 	if (axfr_clients >= AXFR_CLIENT_MAX) {
-		log(VERB_MED, "AXFR: too many AXFR clients, "
+		ylog(VERB_MED, "AXFR: too many AXFR clients, "
 			      "access denied to %s-%d\n",
 			straddr, ntohs(newsa.sin_port));
 		goto out;
@@ -268,14 +268,14 @@ void tcp_handler(void)
 			hdr->opcode != 0)
 				goto child_out;
 			data_size = size;
-			data = request + sizeof(HEADER);
+			data = (unsigned char*)request + sizeof(HEADER);
 			query_count = ntohs(hdr->qdcount);
 			if (query_count != 1)
 				goto child_out;
 
 			/* parse the query */
-			retval = name_decode(data, data_size, request,
-					&name, 1);
+			retval = name_decode(data, data_size,
+                                        (unsigned char*)request, &name, 1);
 			if (name == NULL)
 				goto child_out;
 			updatep(retval);
@@ -288,19 +288,19 @@ void tcp_handler(void)
 			/* The only two accepted requests under TCP are
 			 * IN/AXFR and IN/SOA */
 			if (qclass == C_IN && qtype == T_AXFR) {
-				log(VERB_LOW, "AXFR requested for (%s) from "
+				ylog(VERB_LOW, "AXFR requested for (%s) from "
 					"%s-%d\n", name, straddr,
 					ntohs(newsa.sin_port));
 				send_zone(hdr, request+sizeof(HEADER), retval+4,
 						name, new);
 			} else if (qclass == C_IN && qtype == T_SOA) {
-				log(VERB_MED, "TCP IN SOA requested for (%s) from "
+				ylog(VERB_MED, "TCP IN SOA requested for (%s) from "
 					"%s-%d\n", name, straddr,
 					ntohs(newsa.sin_port));
 				send_soa(hdr, request+sizeof(HEADER), retval+4,
 						name, new);
 			} else {
-				log(VERB_MED, "TCP unaccepted request (%s %s) "
+				ylog(VERB_MED, "TCP unaccepted request (%s %s) "
 						"from %s-%d\n",
 						qclass_to_str(qclass),
 						qtype_to_str(qtype),

@@ -60,11 +60,11 @@ static void initialize(void);
 static void core(void);
 static int scheduler(void);
 static void packet_processor(byte *packet, unsigned int size,
-		struct sockaddr *from, int fromlen);
+		struct sockaddr *from, socklen_t fromlen);
 static void response_processor(byte *packet, unsigned int size,
-		struct sockaddr *from, int fromlen);
+		struct sockaddr *from, socklen_t fromlen);
 static void query_processor(byte *packet, unsigned int size,
-		struct sockaddr *from, int fromlen);
+		struct sockaddr *from, socklen_t fromlen);
 
 #ifdef PROFILING
 unsigned long long get_clock(void)
@@ -162,7 +162,8 @@ int net_init(void)
 {
 	struct sockaddr_in sa;
 	int retval;
-	int size, optsize;
+	int size;
+        socklen_t optsize;
 
 	/* open the main UDP socket */
 	s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -203,7 +204,7 @@ int net_init(void)
 	} else {
 		struct in_addr tmp;
 		if (inet_aton(bindaddr, &tmp) == 0) {
-			log(VERB_FORCE, "[main] bad IP address to bind\n");
+			ylog(VERB_FORCE, "[main] bad IP address to bind\n");
 			return -1;
 		}
 		sa.sin_addr.s_addr = tmp.s_addr;
@@ -225,7 +226,7 @@ int security_init(void)
 	if (getuid() == 0) {
 		pw = getpwnam(safeuser);
 		if (!pw) {
-			log(VERB_FORCE, "[main] getpwnam error, does user '%s' exist?\n",
+			ylog(VERB_FORCE, "[main] getpwnam error, does user '%s' exist?\n",
 				safeuser);
 			exit(1);
 		}
@@ -245,14 +246,14 @@ int security_init(void)
 				exit(1);
 			}
 
-		log(VERB_MED, "switched to user '%s'\n", safeuser);
+		ylog(VERB_MED, "switched to user '%s'\n", safeuser);
 	}
 	return 0;
 }
 
 static void initialize(void)
 {
-	log(VERB_LOW, "DNS server started, verbosity set to %d\n",
+	ylog(VERB_LOW, "DNS server started, verbosity set to %d\n",
 		opt_verbose);
 
 	/* for the uptime */
@@ -286,20 +287,20 @@ static void initialize(void)
 
 	/* Net initialization */
 	if (net_init() == -1) {
-		log(VERB_FORCE, "[initialize] Net initialization failed\n");
+		ylog(VERB_FORCE, "[initialize] Net initialization failed\n");
 		exit(1);
 	}
 
 	/* Initialize DNS over TCP for AXFR requests */
 	if (opt_axfr && axfr_init() == -1) {
-		log(VERB_FORCE, "[initialize] failed initializing AXFR\n");
+		ylog(VERB_FORCE, "[initialize] failed initializing AXFR\n");
 		opt_axfr = 0;
 		/* This isn't fatail */
 	}
 
 	/* Security initialization */
 	if (security_init() == -1) {
-		log(VERB_FORCE, "[initialize] Security initialization "
+		ylog(VERB_FORCE, "[initialize] Security initialization "
 				"failed\n");
 		exit(1);
 	}
@@ -316,7 +317,7 @@ static void initialize(void)
 	if (opt_logfile)
 		open_logfile(logfile);
 
-	log(VERB_LOW, "Local resource records loaded\n");
+	ylog(VERB_LOW, "Local resource records loaded\n");
 }
 
 /* The DNS server main loop */
@@ -327,7 +328,7 @@ static void core(void)
 	while(1) {
 		int size;
 		struct sockaddr_in from;
-		int fromlen;
+		socklen_t fromlen;
 		fd_set rfds;
 		struct timeval tv;
 		int t;
@@ -387,7 +388,7 @@ static void core(void)
 				continue;
 			}
 			statistic_received_packet++;
-			DEBUG(log(VERB_DEBUG, "Packet received\n");)
+			DEBUG(ylog(VERB_DEBUG, "Packet received\n");)
 			packet_processor(packet, size, (struct sockaddr*)&from, fromlen);
 		}
 
@@ -447,14 +448,14 @@ static int scheduler(void)
 				unsigned int old_size = cache_table.size;
 
 				ht_resize(&cache_table);
-				log(VERB_HIG, "Cache table resize (%u -> %u)\n",
+				ylog(VERB_HIG, "Cache table resize (%u -> %u)\n",
 					old_size, cache_table.size);
 			}
 			if (opt_forward) {
 				unsigned int old_size = forward_table.size;
 
 				ht_resize(&forward_table);
-				log(VERB_HIG, "Forward table resize "
+				ylog(VERB_HIG, "Forward table resize "
 					      "(%u -> %u)\n",
 					old_size, forward_table.size);
 			}
@@ -472,7 +473,7 @@ static int scheduler(void)
 }
 
 /* This function pass the control to the right function */
-static void packet_processor(byte *packet, unsigned int size, struct sockaddr *from, int fromlen)
+static void packet_processor(byte *packet, unsigned int size, struct sockaddr *from, socklen_t fromlen)
 {
 	struct sockaddr_in *in = (struct sockaddr_in *) from;
 	char straddr[64];
@@ -481,7 +482,7 @@ static void packet_processor(byte *packet, unsigned int size, struct sockaddr *f
 	/* Check the ACL */
 	strlcpy(straddr, inet_ntoa(in->sin_addr), 64);
 	if (acl_check_dns(straddr) == ACL_DENY) {
-		log(VERB_MED, "DNS Access denied to client %s-%d\n",
+		ylog(VERB_MED, "DNS Access denied to client %s-%d\n",
 			straddr, ntohs(in->sin_port));
 		send_udp_error(s, (struct sockaddr*) from,
 			fromlen, packet, size, ERR_REFUSED);
@@ -490,7 +491,7 @@ static void packet_processor(byte *packet, unsigned int size, struct sockaddr *f
 
 	/* SANITYCHECK: size is < of the DNS header size */
 	if (size < sizeof(HEADER)) {
-		DEBUG(log(VERB_DEBUG, "Packet too short\n");)
+		DEBUG(ylog(VERB_DEBUG, "Packet too short\n");)
 		return;
 	}
 
@@ -509,20 +510,20 @@ static void packet_processor(byte *packet, unsigned int size, struct sockaddr *f
 		break;
 	case IQUERY: /* NOT IMPLEMENTED */
 		statistic_iquery_count++;
-		DEBUG(log(VERB_DEBUG, "Iquery received\n");)
+		DEBUG(ylog(VERB_DEBUG, "Iquery received\n");)
 		send_udp_error(s, from, fromlen, packet, size, ERR_NOTIMPLEMENTED);
 		break;
 	case STATUS: /* NOT IMPLEMENTED */
-		DEBUG(log(VERB_DEBUG, "Status query received\n");)
+		DEBUG(ylog(VERB_DEBUG, "Status query received\n");)
 		send_udp_error(s, from, fromlen, packet, size, ERR_NOTIMPLEMENTED);
 		break;
 	case NS_NOTIFY_OP: /* NOT IMPLEMENTED */
-		DEBUG(log(VERB_DEBUG, "NS notify query received\n");)
+		DEBUG(ylog(VERB_DEBUG, "NS notify query received\n");)
 		send_udp_error(s, from, fromlen, packet, size, ERR_NOTIMPLEMENTED);
 		break;
 	default: /* reserved opcodes */
 		statistic_invalid_packet++;
-		DEBUG(log(VERB_DEBUG, "Invalid or unsupported opcode\n");)
+		DEBUG(ylog(VERB_DEBUG, "Invalid or unsupported opcode\n");)
 		send_udp_error(s, from, fromlen, packet, size, ERR_FORMAT);
 		break;
 	}
@@ -535,7 +536,7 @@ static void packet_processor(byte *packet, unsigned int size, struct sockaddr *f
  * the response to the original requester (the client), put
  * this record in the cache and erase the entry in the forwarded
  * requests table */
-static void response_processor(byte *packet, unsigned int size, struct sockaddr *from, int fromlen)
+static void response_processor(byte *packet, unsigned int size, struct sockaddr *from, socklen_t fromlen)
 {
 	HEADER *hdr = (HEADER*) packet;
 	int id = ntohs(hdr->id), retval;
@@ -550,7 +551,7 @@ static void response_processor(byte *packet, unsigned int size, struct sockaddr 
 	if (!opt_forward)
 		return;
 
-	DEBUG(log(VERB_DEBUG, "Response received ID: %d\n", id);)
+	DEBUG(ylog(VERB_DEBUG, "Response received ID: %d\n", id);)
 
 	/* the shortest name `.' is 1 byte, + 4 for qtype/qclass = 5 bytes */
 	if (qdcount < 1 || data_size < 5)
@@ -574,7 +575,7 @@ static void response_processor(byte *packet, unsigned int size, struct sockaddr 
 	qclass = (data[2] << 8) | data[3];
 	updatep(4);
 
-	log(VERB_LOW, "%s,%d name server replied (%s %s %s ID:%d)\n",
+	ylog(VERB_LOW, "%s,%d name server replied (%s %s %s ID:%d)\n",
 		inet_ntoa(((struct sockaddr_in*)from)->sin_addr),
 		ntohs(((struct sockaddr_in*)from)->sin_port),
 		qtype_to_str(qtype), qclass_to_str(qclass), name, id);
@@ -582,7 +583,7 @@ static void response_processor(byte *packet, unsigned int size, struct sockaddr 
 	/* saerch in the forward table */
 	p = forward_search(id, qtype, qclass, name, &index);
 	if (p != NULL) {
-		DEBUG(log(VERB_DEBUG, "Previous response matches [%s %s %s]\n",
+		DEBUG(ylog(VERB_DEBUG, "Previous response matches [%s %s %s]\n",
 			p->name,
 			qtype_to_str(p->qtype),
 			qclass_to_str(p->qclass));)
@@ -598,9 +599,9 @@ static void response_processor(byte *packet, unsigned int size, struct sockaddr 
 			 * check for this condition. */
 			if (!cache_search_entry(p->name, p->qclass, p->qtype)) {
 				cache_add_entry(p, packet, size);
-				log(VERB_HIG, "Previous response cached\n");
+				ylog(VERB_HIG, "Previous response cached\n");
 			} else {
-				DEBUG(log(VERB_DEBUG, "Already in cache\n");)
+				DEBUG(ylog(VERB_DEBUG, "Already in cache\n");)
 			}
 		}
 		/* send the response to the client */
@@ -611,17 +612,17 @@ static void response_processor(byte *packet, unsigned int size, struct sockaddr 
 		forward_free_by_index(index);
 		if (forward_count > 0)
 			forward_count--;
-		DEBUG(log(VERB_DEBUG, "Response sent to client\n");)
+		DEBUG(ylog(VERB_DEBUG, "Response sent to client\n");)
 		return;
 	}
-	DEBUG(log(VERB_DEBUG, "Response doesn't match\n");)
+	DEBUG(ylog(VERB_DEBUG, "Response doesn't match\n");)
 	free(name);
 	return;
 
 invalid:
 	if(name) free(name);
 	statistic_invalid_packet++;
-	DEBUG(log(VERB_DEBUG, "Response is an invalid DNS packet\n");)
+	DEBUG(ylog(VERB_DEBUG, "Response is an invalid DNS packet\n");)
 }
 
 /* count the number of occurrences of the char 'c' in the string 's' */
@@ -644,7 +645,7 @@ size_t strcount(char *s, int c)
  * It searches in the cache, if the cache match it sends the response,
  * otherwise forwards the request to the external DNS server and creates
  * a new forwarded request entry. */
-static void query_processor(byte *packet, unsigned int size, struct sockaddr *from, int fromlen)
+static void query_processor(byte *packet, unsigned int size, struct sockaddr *from, socklen_t fromlen)
 {
 	HEADER *hdr = (HEADER*) packet;
 	struct sockaddr_in *in = (struct sockaddr_in *) from;
@@ -663,7 +664,7 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 		goto invalid;
 
 	/* Log a warning if the incoming DNS packet is truncated */
-	DEBUG(if (hdr->tc) log(VERB_DEBUG, "Truncated packet\n");)
+	DEBUG(if (hdr->tc) ylog(VERB_DEBUG, "Truncated packet\n");)
 
 	/* answer only to the first query in the request */
 	if (query_count > 1)
@@ -683,7 +684,7 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 		updatep(retval);
 		query_size = retval+4;
 
-		DEBUG(log(VERB_DEBUG, "name: %s\n", name);)
+		DEBUG(ylog(VERB_DEBUG, "name: %s\n", name);)
 
 		/* Enough space for qtype and qclass? */
 		if (data_size < 4)
@@ -693,9 +694,9 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 		qclass = (data[2] << 8) | data[3];
 		updatep(4);
 
-		DEBUG(log(VERB_DEBUG, "(%s %s)\n",
+		DEBUG(ylog(VERB_DEBUG, "(%s %s)\n",
 				qtype_to_str(qtype), qclass_to_str(qclass));)
-		log(VERB_LOW, "%s,%d asks for (%s %s %s)\n",
+		ylog(VERB_LOW, "%s,%d asks for (%s %s %s)\n",
 			inet_ntoa(((struct sockaddr_in*)from)->sin_addr),
 			ntohs(((struct sockaddr_in*)from)->sin_port),
 			qtype_to_str(qtype), qclass_to_str(qclass), name);
@@ -761,7 +762,7 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 			dns_shuffle(response, response_size);
 			send_udp(s, response, response_size, from, fromlen);
 			free(response);
-			DEBUG(log(VERB_DEBUG,
+			DEBUG(ylog(VERB_DEBUG,
 				"Response sent using local RRs\n");)
 			return;
 		}
@@ -770,7 +771,7 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 		strlcpy(straddr, inet_ntoa(in->sin_addr), 64);
 		if (acl_check_fwd(straddr) == ACL_DENY) {
 			free(name);
-			log(VERB_MED, "DNS forwarding Access denied to client %s-%d\n",
+			ylog(VERB_MED, "DNS forwarding Access denied to client %s-%d\n",
 				straddr, ntohs(in->sin_port));
 			send_udp_error(s, (struct sockaddr*) from,
 				fromlen, packet, size, ERR_NAME);
@@ -782,7 +783,7 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 		if (opt_forward == 0) {
 			free(name);
 			send_udp_error(s, from, fromlen, packet, size, ERR_NAME);
-			DEBUG(log(VERB_DEBUG, "No such RR\n");)
+			DEBUG(ylog(VERB_DEBUG, "No such RR\n");)
 			return;
 		} else {
 			struct cacheentry *cached;
@@ -801,15 +802,15 @@ static void query_processor(byte *packet, unsigned int size, struct sockaddr *fr
 					send_udp(s, cached->answer,
 						cached->answer_size, from,
 						fromlen);
-					DEBUG(log(VERB_DEBUG,
+					DEBUG(ylog(VERB_DEBUG,
 						"Sent from cache\n");)
 					free(name);
 					return;
 				}
 			}
 			/* Forward the request to the first external server */
-			forward_request(hdr, packet, size, from, name, qtype, qclass);
-			DEBUG(log(VERB_DEBUG, "Previous forwarded\n");)
+			forward_request(hdr, (char*)packet, size, from, name, qtype, qclass);
+			DEBUG(ylog(VERB_DEBUG, "Previous forwarded\n");)
 			free(name);
 			return;
 		}
@@ -820,5 +821,5 @@ invalid:
 	if (name != NULL)
 		free(name);
 	send_udp_error(s, from, fromlen, packet, size, ERR_FORMAT);
-	DEBUG(log(VERB_DEBUG, "Invalid DNS packet\n");)
+	DEBUG(ylog(VERB_DEBUG, "Invalid DNS packet\n");)
 }

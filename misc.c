@@ -181,7 +181,7 @@ int line_splitter(char *buffer, char *commandargs[], int argmax)
 
 void dump_state(void)
 {
-	log(VERB_FORCE,
+	ylog(VERB_FORCE,
 	"dump_state() requested, dump follows\n"
 	"\n-- GENERAL\n"
 	"s = %d\n"
