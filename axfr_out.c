@@ -75,6 +75,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #define AXFR_CLIENT_MAX		50
 #define AXFR_CLIENT_TIMEOUT	120	/* At least 2 min, see RFC1034 */
