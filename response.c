@@ -106,6 +106,7 @@ byte *build_response(u_int16_t qclass, u_int16_t qtype, char *qname, char *name,
 		/* Add the matching RRs found */
 		for (j = 0; j < ret; j++) {
 			struct RRentry *rr = rrs[j];
+                        char *origname;
 
 			/* build the needed Additional RRs list */
 			arr_index += additional_rr_needed(&arr[arr_index],
@@ -113,7 +114,9 @@ byte *build_response(u_int16_t qclass, u_int16_t qtype, char *qname, char *name,
 
 			/* add the RR. Note that even if we matched a wildcard
 			 * local RR, we add the requested name in the query */
+                        origname = rr->name;
 			rr->name = qname;
+                        rr->name = origname;
 			/* ready to add the RR i the response */
 			retsize = add_rr(&response, hdr, rr,
 				response_size, AN_SECTION, maxsize);
